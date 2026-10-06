@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Praxio — Turn your CODM skill into real rewards</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ================= APP (public landing page + signed-in app) ================= -->
+<div id="app" class="app is-loading">
+
+  <nav class="navbar" id="navbar">
+    <div class="brand">
+      <span class="logo-mark small">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="18" fill="#8B5CF6"/><path d="M18 48V16h14.7C40.8 16 46 20 46 27c0 6.9-5.2 10.9-13.3 10.9H27V48h-9Zm9-18.2h5c3.3 0 5.1-.9 5.1-2.8 0-2-1.8-3-5.1-3h-5v5.8Z" fill="#0B0911"/><circle cx="47" cy="47" r="5" fill="#D9C7FF"/></svg>
+      </span>
+      <span class="brand-name">PRAXIO</span>
+    </div>
+
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="nav-links" id="nav-links">
+      <a href="#dashboard" class="nav-link auth-only hidden">Dashboard</a>
+      <a href="#lobbies" class="nav-link">Lobbies</a>
+      <a href="#how" class="nav-link guest-only">How it works</a>
+      <a href="#leaderboard" class="nav-link">Leaderboard</a>
+      <button class="nav-link nav-link-btn auth-only hidden" id="open-wallet-mobile">Wallet</button>
+    </div>
+
+    <div class="nav-right">
+      <div class="guest-actions guest-only" id="guest-actions">
+        <button class="btn btn-ghost btn-small" id="nav-login-btn">Log in</button>
+        <button class="btn btn-primary btn-small" id="nav-signup-btn">Sign up</button>
+      </div>
+      <button class="wallet-pill auth-only hidden" id="open-wallet">
+        <span class="dot"></span>
+        <span id="wallet-balance-nav">$0.00</span>
+      </button>
+      <div class="profile-menu auth-only hidden" id="profile-menu">
+        <button class="profile-btn" id="profile-btn">
+          <span id="profile-initial">P</span>
+        </button>
+        <div class="profile-dropdown" id="profile-dropdown">
+          <p class="dropdown-name" id="dropdown-gamertag">Player</p>
+          <p class="dropdown-email" id="dropdown-email">you@example.com</p>
+          <hr>
+          <button id="logout-btn">Log out</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero guest-only">
+    <div class="pillars" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="hero-content" data-reveal>
+      <span class="badge-pill">Skill-powered rewards · Call of Duty: Mobile</span>
+      <h1>Where gaming skill<br>turns into <span class="accent-text">real rewards.</span></h1>
+      <p class="hero-sub">Join a live CODM lobby, put your skill to the test, and get paid when you place. No luck. No loot boxes. Just aim.</p>
+      <div class="hero-cta-row">
+        <button class="btn btn-light" id="hero-primary-cta">Find a lobby <span class="arrow-circle">→</span></button>
+        <button class="btn btn-ghost-light guest-only" id="hero-login-cta">I already have an account</button>
+      </div>
+    </div>
+
+    <div class="hero-stats left auth-only hidden" data-reveal>
+      <span class="stat-label"><span class="dot green"></span>This week</span>
+      <span class="stat-value" id="stat-week">+$0.00</span>
+    </div>
+    <div class="hero-stats right auth-only hidden" data-reveal>
+      <span class="stat-label"><span class="dot"></span>Verified</span>
+      <span class="stat-value" id="stat-xp">+0 XP</span>
+    </div>
+
+    <div class="wallet-card glass auth-only hidden" data-reveal>
+      <div class="wallet-card-top">
+        <div>
+          <p class="wallet-card-label">Your Praxio wallet</p>
+          <p class="wallet-card-sub">Available rewards <span class="up">+0.0%</span></p>
+        </div>
+        <button class="dots-btn" id="open-wallet-2">⋯</button>
+      </div>
+      <p class="wallet-card-balance" id="wallet-balance-hero">$0.00</p>
+      <div class="wallet-card-bottom">
+        <div>
+          <p class="wallet-card-label">Active lobby</p>
+          <p class="wallet-card-active" id="active-lobby-name">None yet</p>
+        </div>
+        <a href="#lobbies" class="btn btn-mint btn-small">View lobbies →</a>
+      </div>
+    </div>
+
+    <div class="wallet-card glass guest-only" data-reveal>
+      <div class="wallet-card-top">
+        <div>
+          <p class="wallet-card-label">Get started free</p>
+          <p class="wallet-card-sub">New players get a <span class="up">$10</span> starter bonus</p>
+        </div>
+      </div>
+      <p class="wallet-card-balance">Create your profile</p>
+      <div class="wallet-card-bottom">
+        <div>
+          <p class="wallet-card-label">Setup time</p>
+          <p class="wallet-card-active">Under 60 seconds</p>
+        </div>
+        <button class="btn btn-mint btn-small" id="hero-signup-cta">Sign up free →</button>
+      </div>
+    </div>
+
+    <a href="#lobbies" class="scroll-cue">Scroll to explore <span>↓</span></a>
+  </header>
+
+  <!-- ================= USER DASHBOARD (signed-in only) ================= -->
+  <main id="dashboard" class="section dashboard auth-only hidden">
+    <div class="dash-head">
+      <div class="dash-user">
+        <span class="dash-avatar" id="dash-avatar">P</span>
+        <div>
+          <p class="eyebrow" id="dash-greeting">Welcome back</p>
+          <h2 class="dash-title"><span id="dash-name">Player</span><span class="accent-text">.</span></h2>
+          <p class="dash-sub">Here's how your game is paying off.</p>
+        </div>
+      </div>
+      <div class="dash-actions">
+        <button class="btn btn-ghost btn-small" id="dash-open-wallet">Open wallet</button>
+        <a href="#lobbies" class="btn btn-primary btn-small">Find a lobby →</a>
+      </div>
+    </div>
+
+    <div class="dash-stats">
+      <div class="stat-card featured">
+        <span class="sc-label">Wallet balance</span>
+        <span class="sc-value" id="dash-balance">$0.00</span>
+        <span class="sc-sub" id="dash-withdraw-note">$25.00 needed to withdraw</span>
+      </div>
+      <div class="stat-card">
+        <span class="sc-label">Total earned</span>
+        <span class="sc-value mint" id="dash-earned">$0.00</span>
+        <span class="sc-sub" id="dash-net">Net $0.00</span>
+      </div>
+      <div class="stat-card">
+        <span class="sc-label">Matches played</span>
+        <span class="sc-value" id="dash-matches">0</span>
+        <span class="sc-sub" id="dash-wins">0 wins</span>
+      </div>
+      <div class="stat-card">
+        <span class="sc-label">Win rate</span>
+        <span class="sc-value" id="dash-winrate">0%</span>
+        <div class="mini-bar"><div class="mini-bar-fill" id="dash-winrate-bar"></div></div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="dash-col">
+        <div class="dash-card">
+          <div class="dash-card-head">
+            <h3>Earnings · last 7 days</h3>
+            <span class="chip" id="dash-week-total">$0.00</span>
+          </div>
+          <div class="chart" id="dash-chart"></div>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-card-head">
+            <h3>Quick join</h3>
+            <a href="#lobbies" class="text-btn">All lobbies →</a>
+          </div>
+          <div class="quick-list" id="dash-quick"></div>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-card-head">
+            <h3>Recent activity</h3>
+            <button class="text-btn" id="dash-view-all">View all</button>
+          </div>
+          <div class="tx-list" id="dash-activity"></div>
+        </div>
+      </div>
+
+      <div class="dash-col">
+        <div class="dash-card">
+          <div class="dash-card-head">
+            <h3>Player level</h3>
+            <span class="chip" id="dash-rank-title">Rookie</span>
+          </div>
+          <div class="level-row">
+            <span class="level-badge" id="dash-level">1</span>
+            <div class="level-info">
+              <p class="level-xp"><strong id="dash-xp">0</strong> XP total</p>
+              <div class="mini-bar big"><div class="mini-bar-fill" id="dash-xp-bar"></div></div>
+              <p class="level-next" id="dash-xp-next">100 XP to level 2</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-card-head"><h3>Active lobby</h3></div>
+          <div class="active-lobby" id="dash-active">
+            <span class="status-dot"></span>
+            <div>
+              <p class="al-name" id="dash-active-name">No active lobby</p>
+              <p class="al-sub" id="dash-active-sub">Join one to start earning.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-card-head"><h3>Weekly standing</h3></div>
+          <p class="rank-big" id="dash-rank">Unranked</p>
+          <p class="rank-sub" id="dash-rank-sub">Win a lobby to join the top earners.</p>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-card-head"><h3>Player profile</h3></div>
+          <div class="profile-rows">
+            <div class="profile-row"><span>Gamer tag</span><strong id="dash-p-tag">—</strong></div>
+            <div class="profile-row"><span>CODM UID</span><strong id="dash-p-uid">—</strong></div>
+            <div class="profile-row"><span>Email</span><strong id="dash-p-email">—</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <section id="lobbies" class="section">
+    <p class="eyebrow" data-reveal>Live lobbies</p>
+    <h2 data-reveal>Choose your next<br><span class="accent-text">power move.</span></h2>
+    <div class="lobby-grid" id="lobby-grid"></div>
+  </section>
+
+  <section id="how" class="section how-section guest-only">
+    <p class="eyebrow" data-reveal>How it works</p>
+    <h2 data-reveal>From lobby to<br><span class="accent-text">payout, in 3 steps.</span></h2>
+    <div class="steps-grid">
+      <div class="step-card" data-reveal>
+        <span class="step-index">1</span>
+        <h3>Set up your profile</h3>
+        <p>Add your gamer tag and CODM UID so every result is tracked back to you.</p>
+      </div>
+      <div class="step-card" data-reveal>
+        <span class="step-index">2</span>
+        <h3>Join a live lobby</h3>
+        <p>Pick a mode, pay the entry, and get matched with other players chasing the same prize pool.</p>
+      </div>
+      <div class="step-card" data-reveal>
+        <span class="step-index">3</span>
+        <h3>Get paid for wins</h3>
+        <p>Finish in the money and the reward lands in your Praxio wallet right away.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="leaderboard" class="section">
+    <p class="eyebrow" data-reveal>Community</p>
+    <h2 data-reveal>Top earners<br><span class="accent-text">this week.</span></h2>
+    <div class="leaderboard-list" id="leaderboard-list"></div>
+  </section>
+
+  <footer class="footer">
+    <div class="brand">
+      <span class="logo-mark small">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="18" fill="#8B5CF6"/><path d="M18 48V16h14.7C40.8 16 46 20 46 27c0 6.9-5.2 10.9-13.3 10.9H27V48h-9Zm9-18.2h5c3.3 0 5.1-.9 5.1-2.8 0-2-1.8-3-5.1-3h-5v5.8Z" fill="#0B0911"/><circle cx="47" cy="47" r="5" fill="#D9C7FF"/></svg>
+      </span>
+      <span class="brand-name">PRAXIO</span>
+    </div>
+    <p class="footer-note">Praxio is a skill-based rewards platform for Call of Duty: Mobile players. This demo build simulates wallets and match outcomes locally in your browser — no real money is processed.</p>
+    <p class="footer-copy">© 2026 Praxio. All rights reserved.</p>
+  </footer>
+
+  <!-- WALLET DRAWER -->
+  <div class="overlay" id="drawer-overlay"></div>
+  <aside class="wallet-drawer" id="wallet-drawer">
+    <div class="drawer-head">
+      <h3>Your wallet</h3>
+      <button class="icon-btn" id="close-wallet">✕</button>
+    </div>
+    <p class="drawer-balance-label">Available balance</p>
+    <p class="drawer-balance" id="drawer-balance">$0.00</p>
+    <div class="drawer-stats">
+      <div><span id="drawer-matches">0</span><small>Matches played</small></div>
+      <div><span id="drawer-winrate">0%</span><small>Win rate</small></div>
+    </div>
+    <button class="btn btn-primary btn-block" id="withdraw-btn">Withdraw</button>
+    <p class="drawer-hint">Withdrawals unlock once your balance reaches $25.</p>
+    <h4 class="drawer-sub-title">Transaction history</h4>
+    <div class="tx-list" id="tx-list"></div>
+  </aside>
+
+  <!-- AUTH MODAL -->
+  <div class="modal-overlay auth-modal-overlay" id="auth-modal-overlay">
+    <div class="modal glass auth-modal" id="auth-modal">
+      <button class="icon-btn modal-close" id="close-auth-modal" aria-label="Close">✕</button>
+      <div class="auth-modal-grid">
+        <div class="auth-left">
+          <div class="brand">
+            <span class="logo-mark">
+              <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="18" fill="#8B5CF6"/><path d="M18 48V16h14.7C40.8 16 46 20 46 27c0 6.9-5.2 10.9-13.3 10.9H27V48h-9Zm9-18.2h5c3.3 0 5.1-.9 5.1-2.8 0-2-1.8-3-5.1-3h-5v5.8Z" fill="#0B0911"/><circle cx="47" cy="47" r="5" fill="#D9C7FF"/></svg>
+            </span>
+            <span class="brand-name">PRAXIO</span>
+          </div>
+
+          <div class="auth-card">
+            <div class="tabs" role="tablist">
+              <button class="tab active" data-tab="login" role="tab" aria-selected="true">Log in</button>
+              <button class="tab" data-tab="signup" role="tab" aria-selected="false">Create account</button>
+            </div>
+
+            <!-- LOGIN -->
+            <form id="login-form" class="auth-form active" novalidate>
+              <p class="eyebrow">Welcome back</p>
+              <h1>Ready for your<br>next lobby?</h1>
+              <p class="sub">Log in to see your lobbies, wallet and match history.</p>
+
+              <label class="field">
+                <span>Email</span>
+                <input type="email" name="email" placeholder="you@example.com" required autocomplete="email">
+              </label>
+              <label class="field">
+                <span>Password</span>
+                <input type="password" name="password" placeholder="Your password" required autocomplete="current-password">
+              </label>
+              <p class="form-error" data-error-for="login"></p>
+
+              <button type="submit" class="btn btn-primary btn-block">Log in <span class="arrow">→</span></button>
+              <p class="switch-line">New to Praxio? <button type="button" class="link-btn" data-switch="signup">Create your account</button></p>
+            </form>
+
+            <!-- SIGNUP -->
+            <form id="signup-form" class="auth-form" novalidate>
+              <p class="eyebrow">Join Praxio</p>
+              <h1>Turn CODM skill into<br><span class="accent-text">opportunity.</span></h1>
+              <p class="sub">Set up your player profile to get access to live lobbies.</p>
+
+              <div class="avatar-upload">
+                <button type="button" class="avatar-circle" id="avatar-trigger" aria-label="Add profile picture">
+                  <span id="avatar-plus">+</span>
+                  <img id="avatar-preview" alt="" hidden>
+                </button>
+                <input type="file" id="avatar-input" accept="image/png, image/jpeg" hidden>
+                <div>
+                  <p class="avatar-label">Add profile picture</p>
+                  <p class="avatar-hint">PNG or JPG, up to 5MB</p>
+                </div>
+              </div>
+
+              <label class="field">
+                <span>Gamer tag</span>
+                <input type="text" name="gamertag" placeholder="e.g. JayMoss" required minlength="3" autocomplete="username">
+              </label>
+              <label class="field">
+                <span>CODM UID <em>(optional)</em></span>
+                <input type="text" name="uid" placeholder="e.g. 8827441905">
+              </label>
+              <label class="field">
+                <span>Email</span>
+                <input type="email" name="email" placeholder="you@example.com" required autocomplete="email">
+              </label>
+              <label class="field">
+                <span>Password</span>
+                <input type="password" name="password" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password">
+              </label>
+              <p class="form-error" data-error-for="signup"></p>
+
+              <button type="submit" class="btn btn-primary btn-block">Create my account <span class="arrow">→</span></button>
+              <p class="switch-line">Already have an account? <button type="button" class="link-btn" data-switch="login">Log in</button></p>
+            </form>
+          </div>
+        </div>
+
+        <div class="auth-right">
+          <div class="pillars" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="quote-card glass">
+            <p class="eyebrow light">Welcome to Praxio</p>
+            <h2>Play smarter.<br><span class="accent-text">Earn better.</span></h2>
+            <p class="sub">Skill-powered CODM lobbies and real rewards for the games you already grind.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOIN LOBBY MODAL -->
+  <div class="modal-overlay" id="join-modal-overlay">
+    <div class="modal glass" id="join-modal">
+      <button class="icon-btn modal-close" data-close-modal>✕</button>
+      <p class="eyebrow" id="join-modal-tag">Battle Royale</p>
+      <h3 id="join-modal-title">Lobby name</h3>
+      <p class="sub" id="join-modal-desc">Description</p>
+      <div class="join-modal-rows">
+        <div class="join-row"><span>Entry fee</span><strong id="join-modal-fee">$0.00</strong></div>
+        <div class="join-row"><span>Potential reward</span><strong id="join-modal-reward">$0.00</strong></div>
+        <div class="join-row"><span>Players in lobby</span><strong id="join-modal-players">0/0</strong></div>
+      </div>
+      <button class="btn btn-primary btn-block" id="confirm-join-btn">Confirm &amp; join lobby</button>
+      <p class="modal-error" id="join-modal-error"></p>
+    </div>
+  </div>
+
+  <!-- MATCH / RESULT MODAL -->
+  <div class="modal-overlay" id="match-modal-overlay">
+    <div class="modal glass match-modal">
+      <div id="match-loading" class="match-state">
+        <div class="spinner"></div>
+        <h3>Matching you into the lobby…</h3>
+        <p class="sub">Sit tight, we're placing you against live opponents.</p>
+      </div>
+      <div id="match-result" class="match-state" hidden>
+        <div class="result-icon" id="result-icon">🏆</div>
+        <h3 id="result-title">Victory!</h3>
+        <p class="sub" id="result-desc">You placed #1 in Ranked Rush.</p>
+        <p class="result-amount" id="result-amount">+$0.00</p>
+        <button class="btn btn-primary btn-block" data-close-modal>Back to lobbies</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
