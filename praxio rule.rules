@@ -1,0 +1,157 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // An admin is any signed-in user with a document at admins/{their uid}.
+    // Create that document by hand in the Firebase console. Clients can never write it.
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // When a profile field was last changed (stored in users/{uid}.lastChanged.<field>)
+    function oldStamp(field) {
+      return ('lastChanged' in resource.data && field in resource.data.lastChanged)
+        ? resource.data.lastChanged[field] : null;
+    }
+    function newStamp(field) {
+      return ('lastChanged' in request.resource.data && field in request.resource.data.lastChanged)
+        ? request.resource.data.lastChanged[field] : null;
+    }
+
+    // A field may only change if 7 days have passed since its last change,
+    // and its timestamp must be set by the server clock (request.time).
+    // An unchanged field must keep its old timestamp (no resetting the lock).
+    function fieldOk(field) {
+      return request.resource.data.get(field, null) == resource.data.get(field, null)
+        ? newStamp(field) == oldStamp(field)
+        : (newStamp(field) == request.time
+           && (oldStamp(field) == null
+               || oldStamp(field) + duration.value(7, 'd') <= request.time));
+    }
+
+    // ---------- ADMIN + LOBBIES ----------
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    function validLobby() {
+      return request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 60
+        && request.resource.data.fee is number && request.resource.data.fee >= 0
+        && request.resource.data.rewardMin is number
+        && request.resource.data.rewardMax is number
+        && request.resource.data.rewardMax >= request.resource.data.rewardMin
+        && request.resource.data.max is number && request.resource.data.max > 0
+        && request.resource.data.status in ['open', 'closed']
+        && (!('startsAt' in request.resource.data) || request.resource.data.startsAt is timestamp);
+    }
+
+    // Everyone can read lobbies. Only admins create, edit or delete them.
+    // A player may only bump the "players" counter by exactly 1, and only in the same
+    // write that creates their paid entry (so a lobby can never be over-filled).
+    match /lobbies/{lobbyId} {
+      allow read: if true;
+      allow create: if isAdmin() && validLobby();
+      allow update: if (isAdmin() && validLobby())
+        || (request.auth != null
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['players'])
+            && request.resource.data.players == resource.data.players + 1
+            && request.resource.data.players <= resource.data.max
+            && resource.data.status == 'open'
+            && existsAfter(/databases/$(database)/documents/entries/$(lobbyId + '_' + request.auth.uid))
+            && !exists(/databases/$(database)/documents/entries/$(lobbyId + '_' + request.auth.uid)));
+      allow delete: if isAdmin();
+    }
+
+    // A paid entry. It can only be created in the same write that takes the fee out of the
+    // player's wallet, before the lobby starts, while the lobby is open and not full.
+    match /entries/{entryId} {
+      allow read: if request.auth != null
+        && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && entryId == request.resource.data.lobbyId + '_' + request.auth.uid
+        && get(/databases/$(database)/documents/lobbies/$(request.resource.data.lobbyId)).data.status == 'open'
+        && request.time < get(/databases/$(database)/documents/lobbies/$(request.resource.data.lobbyId)).data.startsAt
+        && get(/databases/$(database)/documents/lobbies/$(request.resource.data.lobbyId)).data.players
+             < get(/databases/$(database)/documents/lobbies/$(request.resource.data.lobbyId)).data.max
+        && request.resource.data.fee == get(/databases/$(database)/documents/lobbies/$(request.resource.data.lobbyId)).data.fee
+        && getAfter(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.balance
+             <= get(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.balance
+                - get(/databases/$(database)/documents/lobbies/$(request.resource.data.lobbyId)).data.fee;
+      allow update, delete: if false;
+    }
+
+    // Room codes. Only an admin can write. A player can read the code only if they have a paid
+    // entry for that lobby AND the lobby's start time has arrived (checked on the server clock).
+    match /roomCodes/{lobbyId} {
+      allow read: if isAdmin()
+        || (request.auth != null
+            && exists(/databases/$(database)/documents/entries/$(lobbyId + '_' + request.auth.uid))
+            && request.time >= get(/databases/$(database)/documents/lobbies/$(lobbyId)).data.startsAt);
+      allow write: if isAdmin();
+    }
+
+    // ---------- YOUR EXISTING RULES (unchanged) ----------
+    match /users/{uid} {
+      allow read: if signedIn(uid) || isAdmin();
+      allow create: if signedIn(uid);
+      allow update: if signedIn(uid)
+        && fieldOk('gamertag')
+        && fieldOk('uid')
+        && fieldOk('accountName');
+      allow delete: if false;
+    }
+
+    match /wallets/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Public copy of gamer tag + avatar so players can find each other.
+    // The gamer tag must match the one in the private users doc, so the
+    // 7-day change lock above can't be bypassed through this collection.
+    match /publicProfiles/{uid} {
+      allow read: if request.auth != null;
+      allow create, update: if signedIn(uid)
+        && request.resource.data.gamertag == get(/databases/$(database)/documents/users/$(uid)).data.gamertag
+        && request.resource.data.gamertagLower == request.resource.data.gamertag.lower();
+      allow delete: if false;
+    }
+
+    // A chat id is the two member uids, sorted and joined by "_".
+    // Only those two people can read or write that conversation.
+    match /chats/{chatId} {
+      allow read: if request.auth != null && request.auth.uid in resource.data.members;
+      allow create: if request.auth != null
+        && request.auth.uid in chatId.split('_')
+        && request.resource.data.members == chatId.split('_')
+        && request.resource.data.members[0] != request.resource.data.members[1];
+      allow update: if request.auth != null
+        && request.auth.uid in resource.data.members
+        && request.resource.data.members == resource.data.members;
+
+      match /messages/{msgId} {
+        allow read: if request.auth != null && request.auth.uid in chatId.split('_');
+        allow create: if request.auth != null
+          && request.auth.uid in chatId.split('_')
+          && request.resource.data.from == request.auth.uid
+          && request.resource.data.type in ['text', 'invite']
+          && request.resource.data.createdAt == request.time
+          && (!('text' in request.resource.data) || request.resource.data.text.size() <= 1000);
+        // the person who received a squad invite can mark it as joined, nothing else
+        allow update: if request.auth != null
+          && request.auth.uid in chatId.split('_')
+          && resource.data.from != request.auth.uid
+          && resource.data.type == 'invite'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joined']);
+      }
+    }
+  }
+}
