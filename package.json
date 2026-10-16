@@ -1,0 +1,10 @@
+{
+  "name": "praxio",
+  "private": true,
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
